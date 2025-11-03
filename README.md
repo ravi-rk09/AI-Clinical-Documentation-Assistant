@@ -150,7 +150,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Ravi Kumar**
 - GitHub: [@ravi-rk09](https://github.com/ravi-rk09)
-- Email: ravi.kumar@example.com
+- Email: ravikgmu96@gmail.com
 
 ## Acknowledgments
 
