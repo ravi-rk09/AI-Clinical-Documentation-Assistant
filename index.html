@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Clinical Documentation Assistant</title>
+  <meta name="description" content="All-in-one AI Clinical Documentation Assistant with Compliance Validator, Test Case Generator, and Document Analyzer." />
+  <style>
+    :root{ --bg:#0b1020; --panel:#121935; --panel-2:#0f1730; --text:#e8eeff; --muted:#aab6e8; --bright:#6ca8ff; --accent:#4ade80; --warn:#f59e0b; --danger:#ef4444; --chip:#1e2a57; --code:#0b132b; --input:#0e1631; --border:#243159; --shadow:0 8px 24px rgba(0,0,0,.35),0 2px 8px rgba(0,0,0,.25)}
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0; font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial; color:var(--text); background: radial-gradient(1200px 800px at 80% -10%, #1b2b56 0%, rgba(27,43,86,0) 60%), radial-gradient(900px 700px at -10% 10%, #142043 0%, rgba(20,32,67,0) 55%), var(--bg)}
+    .container{max-width:1200px; margin:0 auto; padding:24px}
+    header.hero{display:flex; gap:24px; align-items:center; justify-content:space-between; margin:8px 0 24px}
+    .brand{display:flex; gap:14px; align-items:center}
+    .logo{width:44px; height:44px; border-radius:10px; background: linear-gradient(135deg,#60a5fa,#22d3ee 55%,#4ade80); box-shadow: inset 0 0 18px rgba(255,255,255,.25), 0 6px 18px rgba(34,211,238,.35)}
+    h1{font-size:22px; margin:0} .muted{color:var(--muted); font-size:13px}
+    .chip{display:inline-flex; align-items:center; gap:8px; background:var(--chip); color:var(--text); border:1px solid var(--border); padding:6px 10px; border-radius:999px; font-size:12px}
+    .grid{display:grid; grid-template-columns:1fr; gap:18px}
+    @media(min-width:950px){.grid{grid-template-columns: 1.2fr 1fr}}
+    .panel{background:linear-gradient(180deg,var(--panel), var(--panel-2)); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow)}
+    .panel .hd{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--border)}
+    .panel .hd h2{font-size:15px; margin:0} .panel .bd{padding:14px}
+    textarea, input, select{width:100%; background:var(--input); color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:14px; outline:none}
+    textarea{min-height:170px; resize:vertical}
+    .row{display:flex; gap:12px; flex-wrap:wrap} .row>.col{flex:1 1 200px}
+    .btn{display:inline-flex; align-items:center; gap:8px; padding:10px 14px; background:#1a2a56; color:var(--text); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:all .15s}
+    .btn.primary{background:linear-gradient(180deg,#23407a,#1c2f66); border-color:#2b447a}
+    .btn.success{background:linear-gradient(180deg,#166534,#14532d); border-color:#1b6b3a}
+    .btn.warn{background:linear-gradient(180deg,#7c5b12,#5a430e); border-color:#6b4d11}
+    .btn:hover{filter:brightness(1.08)} .actions{display:flex; gap:10px; flex-wrap:wrap}
+    .tabs{display:flex; gap:6px; padding:8px; background:#0e1732; border-bottom:1px solid var(--border); border-radius:14px 14px 0 0}
+    .tab{padding:8px 12px; border-radius:8px; cursor:pointer; border:1px solid transparent}
+    .tab.active{background:#1a2751; border-color:var(--border)}
+    .section{display:none} .section.active{display:block}
+    .split{display:grid; grid-template-columns:1fr; gap:14px}
+    @media(min-width:900px){.split{grid-template-columns:1fr 1fr}}
+    .code{background:var(--code); border:1px solid var(--border); border-radius:12px; padding:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:12px; overflow:auto; max-height:320px}
+    .card{background:#0f1834; border:1px solid var(--border); border-radius:12px; padding:10px}
+    .kpi{display:flex; gap:12px; flex-wrap:wrap}
+    .kpi .item{flex:1 1 160px; background:#0e1732; border:1px solid var(--border); border-radius:12px; padding:10px}
+    .badge{font-size:11px; padding:2px 6px; border-radius:6px; background:#0d223e; border:1px solid var(--border); color:var(--muted)}
+    .list{display:flex; flex-direction:column; gap:10px} .list .row{justify-content:space-between}
+    .hl{color:var(--bright)} footer{margin:22px 0; text-align:center; color:var(--muted); font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="hero">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>AI Clinical Documentation Assistant</h1>
+          <div class="muted">Compliance Validator • Test Case Generator • Document Analyzer</div>
+        </div>
+      </div>
+      <span class="chip">Status: <span id="statusText" class="hl">Ready</span></span>
+    </header>
+
+    <div class="grid">
+      <section class="panel" id="workspace">
+        <div class="tabs" role="tablist">
+          <div class="tab active" role="tab" aria-selected="true" data-target="#validator">Compliance Validator</div>
+          <div class="tab" role="tab" data-target="#generator">Test Case Generator</div>
+          <div class="tab" role="tab" data-target="#analyzer">Document Analyzer</div>
+        </div>
+        <div class="bd">
+
+          <div id="validator" class="section active" aria-labelledby="Compliance Validator">
+            <div class="row">
+              <div class="col">
+                <label>Clinical Document (free-text)</label>
+                <textarea id="docInput" placeholder="Paste or type the clinical documentation here..."></textarea>
+              </div>
+              <div class="col">
+                <label>Compliance Framework</label>
+                <select id="framework">
+                  <option value="hipaa">HIPAA</option>
+                  <option value="hl7">HL7 CDA</option>
+                  <option value="fhir">HL7 FHIR</option>
+                  <option value="gdpr">GDPR (health data)</option>
+                </select>
+                <div class="row" style="margin-top:10px">
+                  <div class="col">
+                    <label>Organization Policy Keywords</label>
+                    <input id="policy" placeholder="e.g., minimum necessary, audit trail, consent" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="actions" style="margin-top:10px">
+              <button class="btn primary" id="runValidate">Validate Compliance</button>
+              <button class="btn" id="suggestFixes">Suggest Fixes</button>
+              <button class="btn" id="exportReport">Export Report</button>
+            </div>
+            <div class="split" style="margin-top:14px">
+              <div>
+                <div class="card kpi">
+                  <div class="item"><div class="muted">Overall Risk</div><div id="riskScore" class="hl">-</div></div>
+                  <div class="item"><div class="muted">Issues</div><div id="issueCount" class="hl">0</div></div>
+                  <div class="item"><div class="muted">Warnings</div><div id="warnCount" class="hl">0</div></div>
+                </div>
+                <div class="card" style="margin-top:10px">
+                  <div class="row"><div class="muted">Detected Issues</div><span class="badge" id="timeStamp">Not run</span></div>
+                  <div id="issuesList" class="list" style="margin-top:8px"></div>
+                </div>
+              </div>
+              <div>
+                <div class="card">
+                  <div class="row"><div class="muted">Compliance Summary</div><span class="badge">auto</span></div>
+                  <pre id="summary" class="code" aria-live="polite"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="generator" class="section" aria-labelledby="Test Case Generator">
+            <div class="row">
+              <div class="col">
+                <label>Feature/Module Description</label>
+                <textarea id="featureDesc" placeholder="Describe the clinical workflow, form, or API behavior to test..."></textarea>
+              </div>
+              <div class="col">
+                <label>Generation Options</label>
+                <div class="row">
+                  <div class="col">
+                    <label>Test Type</label>
+                    <select id="testType">
+                      <option>Unit</option>
+                      <option>Integration</option>
+                      <option>End-to-End</option>
+                      <option>Security</option>
+                      <option>Performance</option>
+                    </select>
+                  </div>
+                  <div class="col">
+                    <label>Format</label>
+                    <select id="format">
+                      <option>Gherkin</option>
+                      <option>JSON</option>
+                      <option>JUnit</option>
+                      <option>PyTest</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="actions" style="margin-top:10px">
+              <button class="btn success" id="genTests">Generate Test Cases</button>
+              <button class="btn" id="copyTests">Copy</button>
+              <button class="btn" id="downloadTests">Download</button>
+            </div>
+            <div class="card" style="margin-top:14px">
+              <div class="row"><div class="muted">Output</div><span class="badge" id="genStamp">Not generated</span></div>
+              <pre id="testsOut" class="code"></pre>
+            </div>
+          </div>
+
+          <div id="analyzer" class="section" aria-labelledby="Document Analyzer">
+            <div class="row">
+              <div class="col">
+                <label>Upload/Drop Clinical Document (txt/json)</label>
+                <input type="file" id="fileInput" accept=".txt,.json" />
+              </div>
+              <div class="col">
+                <label>Analysis Focus</label>
+                <select id="analysisFocus">
+                  <option value="pii">PII Detection</option>
+                  <option value="coding">Clinical Coding (ICD/CPT/SNOMED) Hints</option>
+                  <option value="quality">Quality Metrics</option>
+                  <option value="summarize">Summarization</option>
+                </select>
+              </div>
+            </div>
+            <div class="actions" style="margin-top:10px">
+              <button class="btn primary" id="analyzeDoc">Analyze</button>
+              <button class="btn" id="clearAnalysis">Clear</button>
+            </div>
+            <div class="split" style="margin-top:14px">
+              <div>
+                <div class="card">
+                  <div class="row"><div class="muted">Findings</div><span class="badge" id="anaStamp">Idle</span></div>
+                  <div id="findings" class="list"></div>
+                </div>
+              </div>
+              <div>
+                <div class="card">
+                  <div class="row"><div class="muted">Structured Output</div><span class="badge">preview</span></div>
+                  <pre id="jsonOut" class="code"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="hd"><h2>Quick Start</h2><span class="badge">client-only</span></div>
+        <div class="bd">
+          <ol>
+            <li>Choose a feature tab above.</li>
+            <li>Paste text or upload a file as needed.</li>
+            <li>Click the action button to run in your browser.</li>
+          </ol>
+          <div class="card" style="margin-top:10px">
+            <div class="row"><span class="muted">Notes</span><span class="badge">disclaimer</span></div>
+            <small class="muted">This demo runs entirely in your browser using heuristic logic. No PHI should be pasted here in real scenarios. For production, connect to vetted server-side AI and compliance services.</small>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>© 2025 AI Clinical Documentation Assistant • MIT License</footer>
+  </div>
+
+  <script>
+    const statusEl = document.getElementById('statusText');
+    function setStatus(t){ if(statusEl) statusEl.textContent = t; }
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(t=>{
+      t.addEventListener('click',()=>{
+        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+        t.classList.add('active');
+        const sel = t.getAttribute('data-target');
+        document.querySelector(sel).classList.add('active');
+        setStatus('Ready');
+      });
+    });
+
+    // 1) Compliance Validator (simple heuristics)
+    const RULESETS = {
+      hipaa:{name:'HIPAA', checks:[
+        {id:'min-necessary', label:'Minimum necessary', pattern:/(full\s+ssn|social\s+security|credit\s+card|entire\s+record)/i, severity:'high'},
+        {id:'pii-leak', label:'Possible PII leakage', pattern:/(ssn|dob|mrn|address|phone|email)/i, severity:'med'},
+        {id:'consent', label:'Consent mention', pattern:/(consent|authorization)/i, severity:'info'}
+      ]},
+      hl7:{name:'HL7 CDA', checks:[
+        {id:'sections', label:'Sections present', pattern:/(history\s+of\s+present\s+illness|assessment|plan|allergies|medications)/i, severity:'info'},
+        {id:'codes', label:'Codes referenced', pattern:/(icd-10|snomed|loinc|rxnorm)/i, severity:'info'}
+      ]
